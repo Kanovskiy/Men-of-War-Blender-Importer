@@ -62,6 +62,8 @@ class MDL_NODE_SEQUENCE(MDL_NODE):
 			try:
 				# Create an Animation object and load the ANM file
 				self.anm = ANM(filename)
+			except SyntaxError:
+				raise SyntaxError
 			except:
 				print(sys.exc_info()[0])
 			# Add filename into our loaded animation files

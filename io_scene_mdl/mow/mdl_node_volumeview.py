@@ -41,11 +41,13 @@ class MDL_NODE_VOLUMEVIEW(MDL_NODE):
 
 		print(type(self).__name__ + " Loading file " + filename)
 
-		# try:
-		# Create a mesh object and load the PLY file
-		self.ply = PLY(filename)
-		# except:
-		# 	print(sys.exc_info()[0])
+		try:
+			# Create a mesh object and load the PLY file
+			self.ply = PLY(filename)
+		except SyntaxError:
+			raise SyntaxError
+		except:
+		 	print(sys.exc_info()[0])
 
 		if self.ply:
 			# Get the name of the MTL file referenced inside the PLY file and add it to our data string for parsing
@@ -106,8 +108,8 @@ class MDL_NODE_VOLUMEVIEW(MDL_NODE):
 			self.blender_mesh.vertices.foreach_set("co", unpack_list(self.ply.positions))
 
 			# Load face data into the mesh
-			self.blender_mesh.tessfaces.add(len(self.ply.indeces))
-			self.blender_mesh.tessfaces.foreach_set("vertices", unpack_list(self.ply.indeces))
+			self.blender_mesh.tessfaces.add(len(self.ply.indices))
+			self.blender_mesh.tessfaces.foreach_set("vertices", unpack_list(self.ply.indices))
 
 			# Validate mesh
 			self.blender_mesh.validate()

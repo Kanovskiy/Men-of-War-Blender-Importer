@@ -77,6 +77,19 @@ class MDL_NODE_BONE(MDL_NODE):
 		else:
 			return self.orientation_matrix.inverted()
 
+	def get_blender_orientation_matrix_inverted(self):
+		import bpy
+		import mathutils
+
+		if self.orientation_matrix is None:
+			self.orientation_matrix = mathutils.Matrix().to_3x3()
+
+		parent_node = self.find_parent(MDL_NODE_BONE)
+		if parent_node:
+			return parent_node.get_blender_orientation_matrix() * self.orientation_matrix
+		else:
+			return self.orientation_matrix
+
 	def get_blender_bone(self):
 		blender_armature = None
 		bone = None
@@ -235,7 +248,7 @@ class MDL_NODE_BONE(MDL_NODE):
 
 			#blender_edit_bone.use_local_location = False
 
-			blender_edit_bone.envelope_distance = 4.0
+			#blender_edit_bone.envelope_distance = 4.0
 
 #			blender_edit_bone.tail = blender_edit_bone.head + mathutils.Vector((0,0,0.001))
 #			blender_edit_bone.tail = mathutils.Vector((0,0,0.001))
@@ -400,17 +413,20 @@ class MDL_NODE_BONE(MDL_NODE):
 		# if blender_object.parent == None:
 		# 	print("Object %s has found no parent!!!" % blender_object.name)
 		# else:
+		# 	if bpy.context.mode != "OBJECT":
+		# 		bpy.ops.object.mode_set(mode='OBJECT', toggle=False)
 		# 	# Now unparent our object, keeping its current transformation
-		# 	bpy.ops.object.mode_set(mode='OBJECT', toggle=False)
 		# 	bpy.ops.object.select_all(action='DESELECT')
 		# 	blender_object.select = True
+		# 	bpy.context.scene.objects.active = blender_object
 		# 	bpy.ops.object.parent_clear(type='CLEAR_KEEP_TRANSFORM')
 
 		# # Parent our object to the bone
 		# skeleton_node = self.parent_skeleton_node
 		# if skeleton_node:
-		# 	# Enter pose mode
-		# 	bpy.ops.object.mode_set(mode='OBJECT', toggle=False)
+		# 	# Enter object mode
+		# 	if bpy.context.mode != "OBJECT":
+		# 		bpy.ops.object.mode_set(mode='OBJECT', toggle=False)
 		# 	# Deselect any selected object
 		# 	bpy.ops.object.select_all(action='DESELECT')
 		# 	# Select the mesh object
@@ -419,6 +435,8 @@ class MDL_NODE_BONE(MDL_NODE):
 		# 	blender_rig = skeleton_node.get_blender_rig()
 		# 	# Select armature
 		# 	blender_rig.select = True
+		# 	# Make the rig the active object in Blender
+		# 	bpy.context.scene.objects.active = blender_rig
 		# 	# Enter pose mode
 		# 	bpy.ops.object.mode_set(mode='POSE', toggle=False)
 		# 	# Get the pose bone

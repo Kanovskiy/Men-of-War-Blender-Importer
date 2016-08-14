@@ -53,6 +53,8 @@ class MOWDEF_NODE_EXTENSION(MOWDEF_NODE):
 		try:
 			# Create an MDL object and load the MDL file
 			self.mdl = MDL(filename)
+		except SyntaxError:
+			raise SyntaxError
 		except:
 			print(sys.exc_info()[0])
 

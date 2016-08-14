@@ -53,6 +53,8 @@ class MDL_NODE(object):
 		try:
 			m = __import__(module_name)
 			return getattr(m, class_name)(parent)
+		except SyntaxError:
+			raise SyntaxError
 		except:
 			print(sys.exc_info()[0])
 			return None

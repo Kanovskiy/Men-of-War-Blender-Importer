@@ -74,16 +74,16 @@ class ANM:
                 except struct.error:
                     return
 
-                print("Found entry %s at %s" % (entry, hex(f.tell())) )
+                print("Found entry %s at %s" % (entry, hex(f.tell())))
                 if not(entry in SUPPORTED_ENTRY):
                     raise Exception("Unsupported entry type: %s" % entry)
                 
-                if entry == SUPPORTED_ENTRY[0]: #FRMS
+                if entry == SUPPORTED_ENTRY[0]:  #FRMS
                     # read duration (time) of the animation
                     self.duration, = struct.unpack("<I", f.read(4))
                     print("Animation time:", self.duration)
 
-                if entry == SUPPORTED_ENTRY[1]: #BMAP
+                if entry == SUPPORTED_ENTRY[1]:  #BMAP
                     # read total number of entities involved in this animation
                     self.num_entities, = struct.unpack("<I", f.read(4))
                     print("Number of entities:", self.num_entities)
@@ -95,7 +95,7 @@ class ANM:
                         print("Entity name:", entity_name)
                         self.entities.append(entity_name.decode("utf-8"))
                       
-                if entry == SUPPORTED_ENTRY[2]: #FRM2
+                if entry == SUPPORTED_ENTRY[2]:  #FRM2
                     # read keyframe time
                     keyframe_time, = struct.unpack("<H", f.read(2))
                     print("Keyframe time:", keyframe_time)
@@ -177,18 +177,24 @@ class ANM:
         return ANM_FRAME_POSITION(x, y, z)
 
     def read_quaternion(self, f, inverted):
+        import mathutils
+
         w = x = y = z = 0.0
 
         # Read quaternion
         x, y, z = struct.unpack("fff", f.read(12))
 
         # Calculate W
-        xyz = 1.0 - ( (x*x) + (y*y) + (z*z) )
-        if xyz > 0.0:
-            w = math.sqrt(xyz)
+        # xyz = 1.0 - ( (x*x) + (y*y) + (z*z) )
+        # if xyz > 0.0:
+        #     w = math.sqrt(xyz)
+        w = math.sqrt(math.fabs(1.0 - ( (x*x) + (y*y) + (z*z) )))
 
         # Check if this is an inverted quaternion
         if inverted:
+            import pdb
+            pdb.set_trace()
+            m = Quaternion(w, x, y, z).toMatrix()
             # Return an inverted quaternion
             return ANM_FRAME_QUATERNION(y, -x, w, -z)
         else:

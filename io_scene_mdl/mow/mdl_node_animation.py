@@ -96,6 +96,8 @@ class MDL_NODE_ANIMATION(MDL_NODE):
 						bone_name   = entities[event.index].blender_bone_name
 						action_name = bone_name + '_' + seq.name
 
+						print("Applying data to bone:", bone_name)
+
 						# Check if the rig already has an NLA track for this bone
 						if bone_name not in animation_data.nla_tracks:
 							# Create new NLA Track for this bone
@@ -163,11 +165,34 @@ class MDL_NODE_ANIMATION(MDL_NODE):
 							# Check if this is a quaternion rotation property
 							elif type(prop) == ANM_FRAME_QUATERNION:
 								pass
+
 								# Apply rotation transformation
-								fcurve_rw.keyframe_points.insert(float(frame.time), prop.w)
-								fcurve_rx.keyframe_points.insert(float(frame.time), prop.x)
-								fcurve_ry.keyframe_points.insert(float(frame.time), prop.y)
-								fcurve_rz.keyframe_points.insert(float(frame.time), prop.z)
+								if bone_node.orientation_matrix:
+									import mathutils
+
+									# import pdb
+									# pdb.set_trace()
+
+									# q = mathutils.Quaternion((prop.w, prop.x, prop.y, prop.z))
+									# m = bone_node.get_blender_orientation_matrix_inverted() * q.to_matrix()
+									# q = m.to_quaternion()
+
+									q = mathutils.Quaternion((prop.w, prop.x, prop.y, prop.z))
+									if bone_node.orientation_matrix:
+										m = bone_node.orientation_matrix * q.to_matrix()
+									else:
+										m = q.to_matrix()
+									q = m.to_quaternion()
+
+									fcurve_rw.keyframe_points.insert(float(frame.time), q.w)
+									fcurve_rx.keyframe_points.insert(float(frame.time), q.x)
+									fcurve_ry.keyframe_points.insert(float(frame.time), q.y)
+									fcurve_rz.keyframe_points.insert(float(frame.time), q.z)
+								else:
+									fcurve_rw.keyframe_points.insert(float(frame.time), prop.w)
+									fcurve_rx.keyframe_points.insert(float(frame.time), prop.x)
+									fcurve_ry.keyframe_points.insert(float(frame.time), prop.y)
+									fcurve_rz.keyframe_points.insert(float(frame.time), prop.z)
 
 				# Add newly created actions to the NLA track of its respective entity object
 				for index, entity in enumerate(seq.anm.entities):
