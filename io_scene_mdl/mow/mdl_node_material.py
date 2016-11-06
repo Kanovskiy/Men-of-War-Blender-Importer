@@ -27,6 +27,8 @@ import os
 
 class MDL_NODE_MATERIAL(MDL_NODE):
 	def __init__(self, parent):
+		self.material_file = None
+
 		super(MDL_NODE_MATERIAL, self).__init__(parent)
 
 	def open_file(self, filename):

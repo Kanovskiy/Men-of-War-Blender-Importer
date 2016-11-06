@@ -122,14 +122,14 @@ class MDL:
 		self.root_node.build_blender_scene(blender_context)
 		# Check if we should load the animations
 		if use_animations:
-			# Animations start at 0
-			blender_context.scene.frame_start = 0
-			# Set current animation frame start
-			blender_context.scene.frame_current = 0
+			# # Animations start at 0
+			# blender_context.scene.frame_start = 0
+			# # Set current animation frame start
+			# blender_context.scene.frame_current = 0
 			# Build blender animation
 			self.root_node.build_blender_animation(blender_context)
-			# Set the current frame position as the animation end
-			blender_context.scene.frame_end = blender_context.scene.frame_current
-			# Set current animation frame at the beginning
-			blender_context.scene.frame_current = 0
+			# # Set the current frame position as the animation end
+			# blender_context.scene.frame_end = blender_context.scene.frame_current
+			# # Set current animation frame at the beginning
+			# blender_context.scene.frame_current = 0
 		print("Finished building Blender scene")

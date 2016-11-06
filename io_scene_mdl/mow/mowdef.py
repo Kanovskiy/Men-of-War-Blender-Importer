@@ -130,8 +130,6 @@ class MOWDEF:
 			blender_context.scene.frame_current = 0
 			# Build blender animation
 			self.root_node.build_blender_animation(blender_context)
-			# Set the current frame position as the animation end
-			blender_context.scene.frame_end = blender_context.scene.frame_current
 			# Set current animation frame at the beginning
 			blender_context.scene.frame_current = 0
 		print("Finished building Blender scene")

@@ -50,22 +50,25 @@ class MDL_NODE_VOLUMEVIEW(MDL_NODE):
 		 	print(sys.exc_info()[0])
 
 		if self.ply:
-			# Get the name of the MTL file referenced inside the PLY file and add it to our data string for parsing
-			print("Material filename:", self.ply.material_file)
-			mtl_filename = self.path + self.ply.material_file
+			# Process each mesh
+			for mesh in self.ply.meshes:
+				# Get the name of the MTL file referenced inside the PLY file and add it to our data string for parsing
+				print("Material filename:", mesh.material_file)
+				mtl_filename = self.path + mesh.material_file
 
-			print(type(self).__name__ + " Loading file " + mtl_filename)
+				print(type(self).__name__ + " Loading file " + mtl_filename)
 
-			# Create a MDL_NODE_MATERIAL child node
-			mdl_node_material = self.create_node_from_type('MATERIAL', self)
-			#mdl_node_material.parent = self
-			mdl_node_material.path = self.path
+				# Create a MDL_NODE_MATERIAL child node
+				mdl_node_material = self.create_node_from_type('MATERIAL', self)
+				#mdl_node_material.parent = self
+				mdl_node_material.path = self.path
+				mdl_node_material.material_file = mesh.material_file
 
-			# Load the MTL file
-			mdl_node_material.open_file(mtl_filename)
+				# Load the MTL file
+				mdl_node_material.open_file(mtl_filename)
 
-			# Add the new material node to our child nodes
-			self.nodes.append(mdl_node_material)
+				# Add the new material node to our child nodes
+				self.nodes.append(mdl_node_material)
 
 		# Call our superclass load_data() method. This will also call the load_data() method of our newly created child MDL_NODE_MATERIAL
 		super(MDL_NODE_VOLUMEVIEW, self).load_data()
@@ -132,17 +135,80 @@ class MDL_NODE_VOLUMEVIEW(MDL_NODE):
 					# With the vertex index, append the UV data from that vertex to the UV array
 					uv_layer.data[loop_index].uv = self.ply.UVs[vertex_index]
 
-			# Check if we have a material child node
-			for node in self.nodes:
-				if type(node) == MDL_NODE_MATERIAL:
-					material_node = node
+			# Create blender object
+			ob = bpy.data.objects.new(name=bone_name, object_data=self.blender_mesh)
+			parent_node.blender_object_name = ob.name
 
-			# Check if the material node has a diffuse node
-			for node in material_node.nodes:
-				if type(node) == MDL_NODE_DIFFUSE:
-					diffuse_node = node
+			# Create the vertex groups
+			for mesh in self.ply.meshes:
+				vg = ob.vertex_groups.new(name=bone_name+'#'+mesh.material_file)
+				vg.add(mesh.indices, 1.0, 'ADD')
 
-			# Set the texture
-			if diffuse_node:
-				for uv_face in self.blender_mesh.uv_textures.active.data:
-					uv_face.image = diffuse_node.blender_images[diffuse_node.texturename]
+			# Find material child nodes
+			for material in self.nodes:
+				if type(material) == MDL_NODE_MATERIAL:
+					# Find texture child nodes
+					for texture in material.nodes:
+						if type(texture) == MDL_NODE_DIFFUSE:
+							# Create a material
+							mat = bpy.data.materials.new(name=bone_name+'#'+material.material_file)
+							# Add the material to the object
+							ob.data.materials.append(mat)
+							# Create a texture
+							tex = bpy.data.textures.new(name=bone_name+'#'+texture.texturename, type="IMAGE")
+							# Apply image to the texture
+							tex.image = texture.blender_images[texture.texturename]
+							# Create a new texture slot inside the material
+							tex_slot = mat.texture_slots.add()
+							# Add the texture to the newly created slot
+							tex_slot.texture = tex
+
+
+
+
+			# # Set the texture
+			# if diffuse_node:
+			# 	for uv_face in self.blender_mesh.uv_textures.active.data:
+			# 		uv_face.image = diffuse_node.blender_images[diffuse_node.texturename]
+
+	def build_blender_scene(self, blender_context):
+		import bpy
+
+		# Try to find our blender object
+		try:
+			ob = bpy.context.scene.objects[self.parent.blender_object_name]
+		except:
+			raise Exception("Blender object not found")
+
+		i = 0
+		while True:
+			# Deselect everything
+			bpy.ops.object.select_all(action='DESELECT')
+			# Activate our object
+			bpy.context.scene.objects.active = ob
+			# Select the object
+			ob.select = True
+
+			try:
+				# Check if there is still a vertex group and material available
+				vg  = ob.vertex_groups[i]
+				mat = ob.material_slots[i]
+				# Select the current vertex group and material
+				ob.vertex_groups.active_index = i
+				ob.active_material_index      = i
+
+			except:
+				break
+
+			# Enter edit mode
+			bpy.ops.object.mode_set(mode='EDIT', toggle=False)
+			# Deselect all vertices of the mesh
+			bpy.ops.mesh.select_all(action='DESELECT')
+			# Select the vertices of the vertex group
+			bpy.ops.object.vertex_group_select()
+			# Assign the current material to the vertex group
+			bpy.ops.object.material_slot_assign()
+			# Leave edit mode
+			bpy.ops.object.mode_set(mode='OBJECT', toggle=False)
+
+			i = i + 1

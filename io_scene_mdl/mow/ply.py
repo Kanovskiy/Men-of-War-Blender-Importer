@@ -8,15 +8,10 @@ from __future__ import print_function
 import struct
 import sys
 
+from ply_mesh import PLY_MESH
+
 # constants
 PLYMAGICK = b"EPLY"
-SUPPORTED_MESH = [0x0112, 0x1118]
-SUPPORTED_FORMAT = [0x0404, 0x0405, 0x0406, 0x0444,
-                    0x0504, 0x0544,
-                    0x0644, 0x0604,
-                    0x0704, 0x705, 0x0744, 0x0745,
-                    0x0C14, 0x0C15, 0x0C54, 0x0C55,
-                    0x0F14, 0x0F15, 0x0F54]
 
 D3DFVF_RESERVED0 = 0x01
 D3DFVF_POSITION_MASK = 0x4000E
@@ -76,9 +71,11 @@ class PLY:
         self.matrix_indices = []
         self.normals = []
         self.UVs = []
-        self.mesh_info = 0x0000
-        self.material_file = None
-        self.subskin_bones = []
+
+        self.mesh_fvf = None # Vertex format of the first mesh
+        self.mesh_flags = None # Flags of the first mesh
+
+        self.meshes = []
 
         self.open(self.path)
 
@@ -122,34 +119,43 @@ class PLY:
           print("Bone name:", bone_name)
 
     def mesh(self, f):
-        self.mesh_fvf, = struct.unpack("<I", f.read(4))
-        self.mesh_first_face, = struct.unpack("<I", f.read(4))
-        self.mesh_face_count, = struct.unpack("<I", f.read(4))
-        self.mesh_flags, = struct.unpack("<I", f.read(4))
+        ply_mesh = PLY_MESH()
 
-        print("Flexible Vertex Format:", hex(self.mesh_fvf))
-        print("Number of faces:", self.mesh_face_count)
-        print("Mesh flags:", hex(self.mesh_flags))
+        ply_mesh.fvf,        = struct.unpack("<I", f.read(4))
+        ply_mesh.first_face, = struct.unpack("<I", f.read(4))
+        ply_mesh.face_count, = struct.unpack("<I", f.read(4))
+        ply_mesh.flags,      = struct.unpack("<I", f.read(4))
+
+        self.mesh_fvf = ply_mesh.fvf
+        self.mesh_flags = ply_mesh.flags
+
+        print("Flexible Vertex Format:", hex(ply_mesh.fvf))
+        print("First face:", ply_mesh.first_face)
+        print("Number of faces:", ply_mesh.face_count)
+        print("Mesh flags:", hex(ply_mesh.flags))
 
         # Check if there is specular color data to be read
-        if self.mesh_flags & MESH_FLAG_SPECULAR:
-            self.mesh_rgba_color = f.read(0x4) # R G B A
+        if ply_mesh.flags & MESH_FLAG_SPECULAR:
+            ply_mesh.rgba_color = f.read(0x4) # R G B A
 
         # Check if there is material file data to be read
-        if self.mesh_flags & MESH_FLAG_MATERIAL:
-            material_file_name_length, = struct.unpack("B", f.read(1))
-            self.material_file = f.read(material_file_name_length)
-            self.material_file = self.material_file.decode("utf-8")
-            print("Material file name length:", material_file_name_length)
-            print("Material file:", self.material_file)
+        if ply_mesh.flags & MESH_FLAG_MATERIAL:
+            ply_mesh.material_filename_length, = struct.unpack("B", f.read(1))
+            ply_mesh.material_file = f.read(ply_mesh.material_filename_length)
+            ply_mesh.material_file = ply_mesh.material_file.decode("utf-8")
+            print("Material file name length:", ply_mesh.material_filename_length)
+            print("Material file:", ply_mesh.material_file)
         else:
             raise Exception("Old unsupported PLY format")
 
         # Check if sub-skin data is present
-        if self.mesh_flags & MESH_FLAG_SUBSKIN:
-            self.subskin_count, = struct.unpack("B", f.read(1))
-            for i in range(0, self.subskin_count):
-                self.subskin_bones.append(struct.unpack("B", f.read(1)))
+        if ply_mesh.flags & MESH_FLAG_SUBSKIN:
+            print("Reading subskin data")
+            ply_mesh.subskin_count, = struct.unpack("B", f.read(1))
+            for i in range(0, ply_mesh.subskin_count):
+                ply_mesh.subskin_bones.append(struct.unpack("B", f.read(1)))
+
+        self.meshes.append(ply_mesh)
 
     def vert(self, f):
         vertex_count, = struct.unpack("<I", f.read(4))
@@ -252,14 +258,31 @@ class PLY:
     def indx(self, f):
         idx_count, = struct.unpack("<I", f.read(4))
         print("Indices:", idx_count)
-        for i in range(0, int(idx_count/3)):
-            i0, i1, i2 = struct.unpack("<HHH", f.read(6))
-            if self.mesh_flags & MESH_FLAG_MIRRORED:
-                self.indices.append((i0,i1,i2))
-            else:
-                self.indices.append((i2,i1,i0))
-        print("Indces end at", hex(f.tell()-1))
-    
+        total_face_count = int(idx_count / 3)
+
+        # Process each mesh
+        for mesh in self.meshes:
+            print("Mesh %s" % mesh.material_file)
+            print("From %i to %i" % (mesh.first_face, mesh.first_face + mesh.face_count))
+            for i in range(mesh.first_face, mesh.first_face + mesh.face_count):
+                i0, i1, i2 = struct.unpack("<HHH", f.read(6))
+                if self.mesh_flags & MESH_FLAG_MIRRORED:
+                    self.indices.append((i0,i1,i2))
+                    mesh.indices.append(i0)
+                    mesh.indices.append(i1)
+                    mesh.indices.append(i2)
+                    mesh.weights.append(0)
+                    mesh.weights.append(0)
+                    mesh.weights.append(0)
+                else:
+                    self.indices.append((i2,i1,i0))
+                    mesh.indices.append(i2)
+                    mesh.indices.append(i1)
+                    mesh.indices.append(i0)
+                    mesh.weights.append(0)
+                    mesh.weights.append(0)
+                    mesh.weights.append(0)
+
     def mror(self, f):
         # for position in self.positions:
         #     position[0] = -position[0]

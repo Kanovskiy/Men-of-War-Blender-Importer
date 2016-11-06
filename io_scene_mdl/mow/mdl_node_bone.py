@@ -353,9 +353,13 @@ class MDL_NODE_BONE(MDL_NODE):
 			if mesh_node:
 				blender_mesh = mesh_node.blender_mesh
 
-			# Create a new object with the name of this bone and (if available) a mesh
-			blender_object = bpy.data.objects.new(self.bone_name, blender_mesh)
-			self.blender_object_name = blender_object.name
+			# Try to find an existing blender object of this bone
+			try:
+				blender_object = bpy.data.objects[self.blender_object_name]
+			except:
+				# Create a new object with the name of this bone and (if available) a mesh
+				blender_object = bpy.data.objects.new(self.bone_name, blender_mesh)
+				self.blender_object_name = blender_object.name
 
 			if blender_object:
 				# If we have position data, set objects location

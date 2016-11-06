@@ -212,6 +212,8 @@ class MDL_NODE_ANIMATION(MDL_NODE):
 
 				# Increment the global frame cursor position to an amount equal to the time of this animation sequence
 				blender_context.scene.frame_current += time_of_last_frame
+				# Set the current frame position as the animation end
+				blender_context.scene.frame_end = blender_context.scene.frame_current
 
 		# Exit pose mode (enter object mode)
 		bpy.ops.object.mode_set(mode='OBJECT')
@@ -349,6 +351,8 @@ class MDL_NODE_ANIMATION(MDL_NODE):
 
 				# Increment the global frame cursor position to an amount equal to the time of this animation sequence
 				blender_context.scene.frame_current += time_of_last_frame
+				# Set the current frame position as the animation end
+				blender_context.scene.frame_end = blender_context.scene.frame_current
 
 	def find_bone_node(self, entity):
 		skeleton_node = self
