@@ -268,7 +268,7 @@ class PLY:
                 U,V = struct.unpack("ff", f.read(8))
                 self.UVs.append((U,1-V))
                 # We don't handle more than one texture coordinate at this time, so throw the others away
-                f.read((num_tex_coords-1) * 4)
+                f.read((num_tex_coords-1) * 8)
 
             if has_mesh_specular:
                 f.read(16)
