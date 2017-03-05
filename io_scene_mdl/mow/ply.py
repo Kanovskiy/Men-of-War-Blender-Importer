@@ -126,6 +126,24 @@ class PLY:
         ply_mesh.face_count, = struct.unpack("<I", f.read(4))
         ply_mesh.flags,      = struct.unpack("<I", f.read(4))
 
+        print("------------ Mesh Flags -----------")
+        print("MESH_FLAG_TWO_SIDED = ", ply_mesh.flags & MESH_FLAG_TWO_SIDED )
+        print("MESH_FLAG_USE_ALPHA = ", ply_mesh.flags & MESH_FLAG_USE_ALPHA )
+        print("MESH_FLAG_LIGHT     = ", ply_mesh.flags & MESH_FLAG_LIGHT )
+        print("MESH_FLAG_PLCR      = ", ply_mesh.flags & MESH_FLAG_PLCR )
+        print("MESH_FLAG_SKINNED   = ", ply_mesh.flags & MESH_FLAG_SKINNED )
+        print("MESH_FLAG_SHADOW    = ", ply_mesh.flags & MESH_FLAG_SHADOW )
+        print("MESH_FLAG_MIRRORED  = ", ply_mesh.flags & MESH_FLAG_MIRRORED )
+        print("MESH_FLAG_BLENDTEX  = ", ply_mesh.flags & MESH_FLAG_BLENDTEX )
+        print("MESH_FLAG_BUMP      = ", ply_mesh.flags & MESH_FLAG_BUMP )
+        print("MESH_FLAG_SPECULAR  = ", ply_mesh.flags & MESH_FLAG_SPECULAR )
+        print("MESH_FLAG_MATERIAL  = ", ply_mesh.flags & MESH_FLAG_MATERIAL )
+        print("MESH_FLAG_SUBSKIN   = ", ply_mesh.flags & MESH_FLAG_SUBSKIN )
+        print("MESH_FLAG_TWOTEX    = ", ply_mesh.flags & MESH_FLAG_TWOTEX )
+        print("MESH_FLAG_USINGVD   = ", ply_mesh.flags & MESH_FLAG_USINGVD )
+        print("MESH_FLAG_LIGHTMAP  = ", ply_mesh.flags & MESH_FLAG_LIGHTMAP )
+        print("-----------------------------------")
+
         self.mesh_fvf = ply_mesh.fvf
         self.mesh_flags = ply_mesh.flags
 
@@ -241,10 +259,10 @@ class PLY:
                 f.read(4)
 
             if has_diffuse:
-                f.read(16)
+                f.read(4)
 
             if has_specular:
-                f.read(16)
+                f.read(4)
 
             if has_tex_coords and num_tex_coords > 0:
                 U,V = struct.unpack("ff", f.read(8))
