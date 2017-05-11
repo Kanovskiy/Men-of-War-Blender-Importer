@@ -48,6 +48,7 @@ from mdl import MDL
 from mowdef import MOWDEF
 
 def load(operator, context, **keywords):
+    # import wingdbstub
     time_main = time.time()
 
     filepath = keywords['filepath']

@@ -228,6 +228,10 @@ class MDL_NODE_ANIMATION(MDL_NODE):
 				if seq.anm == None:
 					continue
 
+				# Ignore "repair" animations for now
+				if seq.name == "repair":
+					continue
+
 				entities = {}
 				time_of_last_frame = 0
 
@@ -363,9 +367,17 @@ class MDL_NODE_ANIMATION(MDL_NODE):
 
 		if skeleton_node:
 			print("Found skeleton node!")
+
 			bone_node = skeleton_node.get_bone_node(entity)
 			if bone_node:
 				return bone_node
+
+			# We didn't find a bone with this name, let's try to find a volumeview with this name and get its parent bone instead
+			volumeview_node = skeleton_node.get_volumeview_node(entity)
+			if volumeview_node:
+				bone_node = self.find_parent(MDL_NODE_BONE)
+				if bone_node:
+					return bone_node
 
 		# 	# If this is a bone node, keep it's reference as the upmost bone node we found so far
 		# 	if type(node) == MDL_NODE_BONE:

@@ -24,6 +24,7 @@
 import sys
 
 from mdl_node import MDL_NODE
+from mdl_node_skeleton import MDL_NODE_SKELETON
 from mdl_node_material import MDL_NODE_MATERIAL
 from mdl_node_diffuse import MDL_NODE_DIFFUSE
 
@@ -31,13 +32,27 @@ from ply import PLY
 
 class MDL_NODE_VOLUMEVIEW(MDL_NODE):
 	def __init__(self, parent):
+		self.volumeview_name = None
 		self.ply = None
 		self.blender_mesh = None
 		super(MDL_NODE_VOLUMEVIEW, self).__init__(parent)
 
+	def register_on_skeleton(self):
+		# Try to find our skeleton parent node
+		skeleton_node = self.find_parent(MDL_NODE_SKELETON)
+		if skeleton_node:
+			print("Trying to register volumeview on skeleton")
+			skeleton_node.register_volumeview_node(self)
+
 	def load_data(self):
 		# Construct filename path
 		filename = self.path + self.data.split()[1][1:-1]
+
+		# Take the filename as the volumeview name
+		self.volumeview_name = self.data.split()[1][1:-5]
+
+		# Let our parent skeleton node know that we exist
+		self.register_on_skeleton()
 
 		print(type(self).__name__ + " Loading file " + filename)
 
@@ -172,11 +187,14 @@ class MDL_NODE_VOLUMEVIEW(MDL_NODE):
 			# 		uv_face.image = diffuse_node.blender_images[diffuse_node.texturename]
 
 	def build_blender_scene(self, blender_context):
+		from mdl_node_bone import MDL_NODE_BONE
 		import bpy
 
 		# Try to find our blender object
 		try:
-			ob = bpy.context.scene.objects[self.parent.blender_object_name]
+			parent_node = self.find_parent(MDL_NODE_BONE)
+			if parent_node:
+				ob = bpy.context.scene.objects[parent_node.blender_object_name]
 		except:
 			raise Exception("Blender object not found")
 

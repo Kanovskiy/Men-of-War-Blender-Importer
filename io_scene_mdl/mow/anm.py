@@ -192,11 +192,13 @@ class ANM:
 
         # Check if this is an inverted quaternion
         if inverted:
-            import pdb
-            pdb.set_trace()
-            m = Quaternion(w, x, y, z).toMatrix()
+            #m = mathutils.Quaternion((w, x, y, z)).to_matrix()
+            q = mathutils.Quaternion((w, x, y, z))
+            q.invert()
+
             # Return an inverted quaternion
-            return ANM_FRAME_QUATERNION(y, -x, w, -z)
+            # return ANM_FRAME_QUATERNION(y, -x, w, -z)
+            return ANM_FRAME_QUATERNION(x, y, z, w)
         else:
             # Return a normal quaternion
             return ANM_FRAME_QUATERNION(x, y, z, w)

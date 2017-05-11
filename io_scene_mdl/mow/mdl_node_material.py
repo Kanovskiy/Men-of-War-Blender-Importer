@@ -38,7 +38,7 @@ class MDL_NODE_MATERIAL(MDL_NODE):
 		# Encode filename to filesystem encoding
 		filename = os.fsencode(filename)
 
-		# Open MDL file
+		# Open MTL file
 		f = open(filename, 'r')
 
 		# Read all lines of the MDL file

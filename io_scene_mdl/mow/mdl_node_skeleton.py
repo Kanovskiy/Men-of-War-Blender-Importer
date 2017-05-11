@@ -26,6 +26,7 @@ from mdl_node import MDL_NODE
 class MDL_NODE_SKELETON(MDL_NODE):
 	def __init__(self, parent):
 		self.bone_nodes = []
+		self.volumeview_nodes = []
 		self.armature_name = None
 		self.rig_name = None
 		# self.blender_armature = None
@@ -53,6 +54,11 @@ class MDL_NODE_SKELETON(MDL_NODE):
 		# Add bone node to our bone nodes array
 		self.bone_nodes.append(bone_node)
 
+	def register_volumeview_node(self, volumeview_node):
+		print("Registering volumeview node:", volumeview_node.volumeview_name)
+		# Add volumeview node to our volumeview nodes array
+		self.volumeview_nodes.append(volumeview_node)
+
 	def get_root_bone_node(self):
 		if len(self.bone_nodes) > 0:
 			return self.bone_nodes[0]
@@ -63,6 +69,12 @@ class MDL_NODE_SKELETON(MDL_NODE):
 		for bone_node in self.bone_nodes:
 			if bone_node.bone_name == bone_name:
 				return bone_node
+		return None
+
+	def get_volumeview_node(self, volumeview_name):
+		for volumeview_node in self.volumeview_nodes:
+			if volumeview_node.volumeview_name == volumeview_name:
+				return volumeview_node
 		return None
 
 	def build_blender_armature(self, blender_context):

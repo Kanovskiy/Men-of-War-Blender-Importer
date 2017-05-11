@@ -211,6 +211,7 @@ class PLY:
             num_tex_coords = (self.mesh_fvf & D3DFVF_TEXCOUNT_MASK) >> D3DFVF_TEXCOUNT_SHIFT
 
         has_mesh_specular = ((self.mesh_flags & MESH_FLAG_SPECULAR) != 0)
+        has_mesh_bump = ((self.mesh_flags & MESH_FLAG_BUMP) != 0)
 
         print("Vertex size:", vertex_size)
         print("Vertex count:", vertex_count)
@@ -248,8 +249,9 @@ class PLY:
                 self.weights.append(weights)
 
             if has_matrix_indices:
-                matrix_indices, = struct.unpack("<I", f.read(4))
-                self.matrix_indices.append(matrix_indices)
+                # matrix_indices, = struct.unpack("<I", f.read(4))
+                index1, index2, index3, index4 = struct.unpack("<BBBB", f.read(4))
+                # self.matrix_indices.append(matrix_indices)
 
             if has_normal:
                 nx, ny, nz = struct.unpack("fff", f.read(12))
@@ -270,7 +272,10 @@ class PLY:
                 # We don't handle more than one texture coordinate at this time, so throw the others away
                 f.read((num_tex_coords-1) * 8)
 
-            if has_mesh_specular:
+            # if has_mesh_specular:
+            #     f.read(16)
+
+            if has_mesh_bump:
                 f.read(16)
 
     def indx(self, f):
