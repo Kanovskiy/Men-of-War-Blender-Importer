@@ -21,6 +21,8 @@
 # Men of War MDL importer for Blender
 # Script Copyright (C) by Björn Martins Paz
 
+import os
+
 from mowdef import MOWDEF
 from mowdef_node import MOWDEF_NODE
 from mowdef_node_game_entity import MOWDEF_NODE_GAME_ENTITY
@@ -56,7 +58,7 @@ class MOWDEF_NODE_PLACE(MOWDEF_NODE):
 				# Check if we have a bone name and a game entity name
 				if self.bone_name and game_entity_name:
 					# Build a complete filepath to the .DEF file
-					filename = self.path + game_entity_name + '\\' + game_entity_name + '.def'
+					filename = self.path + game_entity_name + os.sep + game_entity_name + '.def'
 					print(filename)
 					# Load the .DEF file of the game entity
 					self.mowdefs.append(MOWDEF(filename))

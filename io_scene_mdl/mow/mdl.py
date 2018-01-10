@@ -31,7 +31,7 @@ class MDL:
 
 		# Create the root node with no parent
 		self.root_node = MDL_NODE.create_node_from_type('root', None)
-		self.root_node.path = os.path.dirname(filename) + '\\'
+		self.root_node.path = os.path.dirname(filename) + os.sep
 
 		# Open the file
 		self.open_file(filename)

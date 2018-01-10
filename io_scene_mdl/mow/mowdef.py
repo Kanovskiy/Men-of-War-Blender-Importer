@@ -34,7 +34,7 @@ class MOWDEF:
 		self.root_node = MOWDEF_NODE.create_node_from_type('root', None)
 
 		# Add the path information to the root node
-		self.root_node.path = os.path.dirname(filename) + '\\'
+		self.root_node.path = os.path.dirname(filename) + os.sep
 
 		# Open the file and load its content into our self.data attribute
 		self.open_file(filename)
