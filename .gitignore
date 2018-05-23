@@ -25,6 +25,9 @@ $RECYCLE.BIN/
 # Windows shortcuts
 *.lnk
 
+# Kdevelop project files
+*.kdev4
+
 # =========================
 # Operating System Files
 # =========================
