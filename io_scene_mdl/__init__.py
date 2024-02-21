@@ -25,7 +25,7 @@ bl_info = {
     "name": "Men of War MDL Format",
     "author": "Björn Martins Paz",
     "version": (1, 0, 0),
-    "blender": (2, 7, 2),
+    "blender": (2, 80, 0),
     "location": "File > Import-Export",
     "description": "Import Men of War MDL",
     "warning": "",
