@@ -25,12 +25,14 @@ bl_info = {
     "name": "Men of War MDL Format",
     "author": "Björn Martins Paz",
     "version": (1, 0, 0),
-    "blender": (2, 80, 0),
+    "blender": (3, 0, 0),
     "location": "File > Import-Export",
     "description": "Import Men of War MDL",
     "warning": "",
     "support": 'TESTING',
-    "category": "Import-Export"}
+    "category": "Import-Export"
+}
+
 
 if "bpy" in locals():
     import importlib
